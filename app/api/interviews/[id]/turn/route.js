@@ -76,7 +76,14 @@ export async function POST(request, { params }) {
         send({ type: "done", ended: result.ended, status: result.ended ? "completed" : "active" });
       } catch (err) {
         console.error("[turn] generation error:", err);
-        send({ type: "error", message: "The interviewer had trouble responding. Please try again." });
+        const status = err?.status ?? err?.code;
+        const message =
+          status === 429
+            ? "Rate limit reached on the AI provider (free-tier quota). Wait a minute and try again — if it keeps happening, today's quota for this model is used up."
+            : status === 401 || status === 403
+              ? "The AI provider rejected the API key. Check GEMINI_API_KEY in .env.local and restart the server."
+              : "The interviewer had trouble responding. Please try again.";
+        send({ type: "error", message });
       } finally {
         controller.close();
       }
