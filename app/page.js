@@ -16,9 +16,28 @@ export default function SetupPage() {
     persona: DEFAULTS.persona,
     numQuestions: DEFAULTS.numQuestions,
     focus: "",
+    resume: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  function loadResumeFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 200 * 1024) {
+      setError("Resume file too large — please keep it under 200 KB of text.");
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((f) => ({ ...f, resume: String(reader.result || "").slice(0, 20000) }));
+      setError("");
+    };
+    reader.onerror = () => setError("Could not read that file.");
+    reader.readAsText(file);
+    e.target.value = "";
+  }
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -165,6 +184,35 @@ export default function SetupPage() {
                 maxLength={400}
               />
             </Field>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground/90">
+                Resume <span className="text-muted font-normal">(optional, recommended)</span>
+              </span>
+              <label className="text-xs text-accent-2 hover:underline cursor-pointer">
+                Load from .txt / .md file
+                <input type="file" accept=".txt,.md,text/plain,text/markdown" className="hidden" onChange={loadResumeFile} />
+              </label>
+            </div>
+            <span className="block text-xs text-muted mt-0.5 mb-2">
+              Paste your resume — the interviewer will ask about your actual projects and experience.
+            </span>
+            <textarea
+              className="input resize-y"
+              rows={form.resume ? 8 : 3}
+              placeholder="Paste your resume text here…"
+              value={form.resume}
+              onChange={set("resume")}
+              maxLength={20000}
+            />
+            {form.resume && (
+              <div className="flex justify-between text-[11px] text-muted mt-1">
+                <span>✓ Interviewer will tailor questions to this resume</span>
+                <span>{form.resume.length.toLocaleString()} / 20,000</span>
+              </div>
+            )}
           </div>
 
           {error && (
