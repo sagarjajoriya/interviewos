@@ -1,65 +1,240 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { INTERVIEW_TYPES, LEVELS, PERSONAS, DEFAULTS } from "@/lib/interview/personas";
+
+export default function SetupPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({
+    candidateName: "",
+    role: "",
+    company: "",
+    type: DEFAULTS.type,
+    level: DEFAULTS.level,
+    persona: DEFAULTS.persona,
+    numQuestions: DEFAULTS.numQuestions,
+    focus: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function start(e) {
+    e.preventDefault();
+    if (!form.role.trim()) {
+      setError("Please enter the role you're interviewing for.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/interviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed to create interview");
+      const session = await res.json();
+      router.push(`/interview/${session.id}`);
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+      setSubmitting(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
+    <main className="flex-1 w-full">
+      <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
+        <header className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted mb-5">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" /> AI Interviewer · text mode
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
+            Interview<span className="text-accent-2">OS</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-4 text-muted text-lg max-w-xl mx-auto">
+            A realistic, adaptive interview that listens, asks intelligent follow-ups, and
+            hands you a detailed, rubric-based evaluation at the end.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </header>
+
+        <form
+          onSubmit={start}
+          className="rounded-2xl border border-border bg-surface/70 backdrop-blur p-6 sm:p-8 shadow-2xl shadow-black/30"
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Your name" hint="How the interviewer will address you">
+              <input
+                className="input"
+                placeholder="e.g. Alex"
+                value={form.candidateName}
+                onChange={set("candidateName")}
+                maxLength={80}
+              />
+            </Field>
+            <Field label="Role" required hint="The position you're interviewing for">
+              <input
+                className="input"
+                placeholder="e.g. Senior Frontend Engineer"
+                value={form.role}
+                onChange={set("role")}
+                maxLength={120}
+              />
+            </Field>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 mt-5">
+            <Field label="Company" hint="Optional — adds realistic context">
+              <input
+                className="input"
+                placeholder="e.g. Acme Inc."
+                value={form.company}
+                onChange={set("company")}
+                maxLength={120}
+              />
+            </Field>
+            <Field label="Seniority level">
+              <select className="input" value={form.level} onChange={set("level")}>
+                {Object.values(LEVELS).map((l) => (
+                  <option key={l.id} value={l.id}>{l.label}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          <div className="mt-6">
+            <Label>Interview type</Label>
+            <div className="grid gap-3 sm:grid-cols-2 mt-2">
+              {Object.values(INTERVIEW_TYPES).map((t) => (
+                <Choice
+                  key={t.id}
+                  active={form.type === t.id}
+                  onClick={() => setForm((f) => ({ ...f, type: t.id }))}
+                  title={t.label}
+                  desc={t.blurb}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <Label>Interviewer style</Label>
+            <div className="grid gap-3 sm:grid-cols-3 mt-2">
+              {Object.values(PERSONAS).map((p) => (
+                <Choice
+                  key={p.id}
+                  active={form.persona === p.id}
+                  onClick={() => setForm((f) => ({ ...f, persona: p.id }))}
+                  title={p.label}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 mt-6">
+            <Field
+              label={`Interview length — ${form.numQuestions} topics`}
+              hint="Approx. number of primary questions"
+            >
+              <input
+                type="range"
+                min={3}
+                max={12}
+                value={form.numQuestions}
+                onChange={(e) => setForm((f) => ({ ...f, numQuestions: Number(e.target.value) }))}
+                className="w-full accent-[var(--accent)] mt-3"
+              />
+            </Field>
+            <Field label="Focus areas" hint="Optional — skills or themes to probe">
+              <input
+                className="input"
+                placeholder="e.g. React performance, system design"
+                value={form.focus}
+                onChange={set("focus")}
+                maxLength={400}
+              />
+            </Field>
+          </div>
+
+          {error && (
+            <p className="mt-5 text-sm text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-7 w-full rounded-xl bg-accent hover:bg-accent/90 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium py-3.5 transition ring-focus"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {submitting ? "Preparing your interview…" : "Start interview →"}
+          </button>
+          <p className="mt-3 text-center text-xs text-muted">
+            You can end the interview anytime and get your report.
+          </p>
+        </form>
+      </div>
+
+      <style jsx global>{`
+        .input {
+          width: 100%;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: 0.6rem;
+          padding: 0.65rem 0.8rem;
+          color: var(--foreground);
+          font-size: 0.95rem;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(109, 107, 245, 0.25);
+        }
+        .input::placeholder {
+          color: var(--muted);
+          opacity: 0.7;
+        }
+      `}</style>
+    </main>
+  );
+}
+
+function Label({ children }) {
+  return <span className="text-sm font-medium text-foreground/90">{children}</span>;
+}
+
+function Field({ label, hint, required, children }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-foreground/90">
+        {label} {required && <span className="text-accent-2">*</span>}
+      </span>
+      {hint ? (
+        <span className="block text-xs text-muted mt-0.5 mb-2">{hint}</span>
+      ) : (
+        <span className="block mb-2" />
+      )}
+      {children}
+    </label>
+  );
+}
+
+function Choice({ active, onClick, title, desc }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`text-left rounded-xl border p-3.5 transition ${
+        active
+          ? "border-accent bg-accent/10 ring-1 ring-accent"
+          : "border-border bg-surface-2 hover:border-accent/50"
+      }`}
+    >
+      <div className="text-sm font-medium">{title}</div>
+      {desc && <div className="text-xs text-muted mt-1 leading-snug">{desc}</div>}
+    </button>
   );
 }

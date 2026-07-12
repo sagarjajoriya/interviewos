@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# InterviewOS — AI Interviewer
 
-## Getting Started
+A realistic, adaptive AI interviewer. It conducts a live text interview one
+question at a time, listens to each answer, asks intelligent follow-ups, and
+produces a detailed, rubric-based evaluation report at the end. Built to feel
+like talking to a real interviewer — not a chatbot.
 
-First, run the development server:
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local     # then add your GEMINI_API_KEY
+npm run dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Get a Gemini API key at https://aistudio.google.com/apikey and put it in
+`.env.local`:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-2.5-flash
+GEMINI_API_KEY=xxxxxxxx
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it works
 
-## Learn More
+1. **Setup** (`/`) — pick the role, level, interview type, interviewer style,
+   and length.
+2. **Interview** (`/interview/:id`) — a streaming, one-question-at-a-time
+   conversation. A private "director" note steers pacing and follow-ups behind
+   the scenes; the model naturally wraps up when enough ground is covered.
+3. **Report** (`/report/:id`) — a structured evaluation: recommendation, an
+   overall score, a 5-dimension rubric breakdown, strengths, concerns, notable
+   moments, and next-round suggestions.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  page.js                       Setup form (landing)
+  interview/[id]/               Interview room (streaming chat UI)
+  report/[id]/                  Evaluation report
+  api/interviews/               REST + NDJSON streaming endpoints
+lib/
+  llm/                          LLM abstraction — provider-agnostic
+    provider.js                 The contract every provider implements
+    gemini.js                   Gemini Flash adapter
+    index.js                    Provider registry / factory
+  interview/                    Domain logic
+    personas.js                 Types, levels, personas, config normalization
+    prompts.js                  Interviewer + report prompt engineering
+    engine.js                   Turn orchestration, pacing, report generation
+  db/store.js                   Repository (in-memory, swappable)
+  client/ndjson.js              Browser NDJSON stream reader
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Swapping the LLM provider
 
-## Deploy on Vercel
+The app depends only on the `LLMProvider` contract in
+[`lib/llm/provider.js`](lib/llm/provider.js) — never on a vendor SDK. To move
+from Gemini to Groq (or OpenAI, Ollama, ...):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Add `lib/llm/<vendor>.js` extending `BaseLLMProvider` (`streamChat` +
+   `generateJSON`).
+2. Register a factory in [`lib/llm/index.js`](lib/llm/index.js).
+3. Set `LLM_PROVIDER=<vendor>` (and its API key) in `.env.local`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No changes to routes, engine, or UI.
+
+### Swapping storage
+
+Sessions live behind the repository in [`lib/db/store.js`](lib/db/store.js)
+(in-memory today). Implement the same methods against Postgres/SQLite/Redis and
+return it from `getRepo()` — no other code changes.
+
+## Roadmap
+
+- Voice mode (speech-to-text in, text-to-speech interviewer out)
+- Persistent database + auth so reports survive restarts
+- Resume-aware questioning and coding-exercise interviews
+- PDF export of reports
