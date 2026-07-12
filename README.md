@@ -50,7 +50,8 @@ lib/
     personas.js                 Types, levels, personas, config normalization
     prompts.js                  Interviewer + report prompt engineering
     engine.js                   Turn orchestration, pacing, report generation
-  db/store.js                   Repository (in-memory, swappable)
+  db/store.js                   Repository interface + in-memory driver
+  db/sqlite.js                  SQLite driver (node:sqlite, zero deps) — default
   client/ndjson.js              Browser NDJSON stream reader
 ```
 
@@ -67,15 +68,18 @@ from Gemini to Groq (or OpenAI, Ollama, ...):
 
 No changes to routes, engine, or UI.
 
-### Swapping storage
+### Storage
 
-Sessions live behind the repository in [`lib/db/store.js`](lib/db/store.js)
-(in-memory today). Implement the same methods against Postgres/SQLite/Redis and
-return it from `getRepo()` — no other code changes.
+Sessions persist to SQLite (`./data/interviewos.db`) via Node's built-in
+`node:sqlite` — no external dependencies. Interviews and reports survive
+restarts, and `/history` lists past sessions. Set `DB_DRIVER=memory` for
+ephemeral storage. To move to Postgres/Redis, implement the repository
+methods in a new file and register it in `getRepo()` in
+[`lib/db/store.js`](lib/db/store.js) — no other code changes.
 
 ## Roadmap
 
-- Voice mode (speech-to-text in, text-to-speech interviewer out)
-- Persistent database + auth so reports survive restarts
 - Resume-aware questioning and coding-exercise interviews
+- Voice mode (speech-to-text in, text-to-speech interviewer out)
+- Auth + multi-user support
 - PDF export of reports

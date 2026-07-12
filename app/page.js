@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { INTERVIEW_TYPES, LEVELS, PERSONAS, DEFAULTS } from "@/lib/interview/personas";
 
@@ -48,8 +49,16 @@ export default function SetupPage() {
     <main className="flex-1 w-full">
       <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
         <header className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted mb-5">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" /> AI Interviewer · text mode
+          <div className="flex items-center justify-center gap-3 mb-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" /> AI Interviewer · text mode
+            </div>
+            <Link
+              href="/history"
+              className="inline-flex items-center rounded-full border border-border bg-surface/60 px-3 py-1 text-xs text-muted hover:text-foreground hover:border-accent/50 transition"
+            >
+              Past interviews →
+            </Link>
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">
             Interview<span className="text-accent-2">OS</span>

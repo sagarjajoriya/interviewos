@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import { getRepo, toPublicSession } from "@/lib/db/store";
+import { getRepo, toPublicSession, toSessionSummary } from "@/lib/db/store";
 import { normalizeConfig } from "@/lib/interview/personas";
 
 export const runtime = "nodejs";
+
+/** GET /api/interviews — recent interviews (summaries, newest first). */
+export async function GET() {
+  const sessions = getRepo().list(50);
+  return NextResponse.json({ interviews: sessions.map(toSessionSummary) });
+}
 
 /** POST /api/interviews — create a new interview session from a config. */
 export async function POST(request) {
