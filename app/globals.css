@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0c10;
-  --surface: #14161d;
-  --surface-2: #1b1e27;
-  --border: #262a36;
-  --foreground: #e9eaf0;
-  --muted: #9aa0b4;
-  --accent: #6d6bf5;
-  --accent-2: #a78bfa;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
+  --background: #f7f7fa;
+  --surface: #ffffff;
+  --surface-2: #f1f2f6;
+  --border: #e4e6ee;
+  --foreground: #1c1e2b;
+  --muted: #676d84;
+  --accent: #5a5bd8;
+  --accent-2: #7c5ce0;
+  --success: #0d9c6e;
+  --warning: #c98a04;
+  --danger: #dc4545;
 }
 
 @theme inline {
@@ -37,12 +37,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Ambient gradient wash for depth */
+/* Ambient gradient wash for depth — soft pastel tints on light ground */
 .app-bg {
   background:
-    radial-gradient(1100px 500px at 15% -10%, rgba(109, 107, 245, 0.16), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(167, 139, 250, 0.1), transparent 55%),
+    radial-gradient(1100px 520px at 12% -10%, rgba(90, 91, 216, 0.09), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(124, 92, 224, 0.07), transparent 55%),
+    radial-gradient(700px 400px at 50% 110%, rgba(13, 156, 110, 0.05), transparent 60%),
     var(--background);
+}
+
+/* Premium card treatment */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 2px rgba(28, 30, 43, 0.04),
+    0 8px 24px -12px rgba(28, 30, 43, 0.12);
 }
 
 /* Typing indicator */
@@ -71,10 +81,10 @@ body {
 /* Custom scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: #d4d7e3 transparent;
 }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: #d4d7e3; border-radius: 8px; }
 
 /* Focus ring */
 .ring-focus:focus-visible {

@@ -139,7 +139,7 @@ export default function InterviewRoom({ id }) {
   return (
     <div className="flex-1 flex flex-col min-h-0 h-screen">
       {/* Header */}
-      <header className="border-b border-border bg-surface/70 backdrop-blur sticky top-0 z-10">
+      <header className="border-b border-border bg-surface/85 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-3">
           <Link href="/" className="text-sm text-muted hover:text-foreground shrink-0">← Exit</Link>
           <div className="flex-1 min-w-0">
@@ -204,9 +204,9 @@ export default function InterviewRoom({ id }) {
 
       {/* Composer */}
       {!ended && (
-        <div className="border-t border-border bg-surface/70 backdrop-blur">
+        <div className="border-t border-border bg-surface/85 backdrop-blur">
           <div className="mx-auto max-w-3xl px-4 py-3">
-            <div className="flex items-end gap-2 rounded-xl border border-border bg-surface-2 p-2 focus-within:border-accent/60 transition">
+            <div className="flex items-end gap-2 rounded-xl border border-border bg-surface shadow-sm p-2 focus-within:border-accent/60 transition">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -242,7 +242,7 @@ export default function InterviewRoom({ id }) {
           font-size: 0.9rem;
           transition: background 0.15s, opacity 0.15s;
         }
-        .btn-accent:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+        .btn-accent:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
       `}</style>
     </div>
   );
@@ -261,10 +261,10 @@ function Bubble({ role, name, children }) {
         {isInterviewer ? "AI" : (name || "You").slice(0, 1).toUpperCase()}
       </div>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-[0.95rem] ${
+        className={`max-w-[80%] rounded-2xl px-4 py-3 text-[0.95rem] shadow-sm ${
           isInterviewer
             ? "bg-surface border border-border rounded-tl-sm"
-            : "bg-accent/15 border border-accent/25 rounded-tr-sm"
+            : "bg-accent/10 border border-accent/20 rounded-tr-sm"
         }`}
       >
         {children}

@@ -31,13 +31,13 @@ export default function Markdown({ children }) {
               <code className={className} {...props} />
             ) : (
               <code
-                className="rounded bg-black/30 border border-border px-1 py-0.5 text-[0.85em] font-mono"
+                className="rounded bg-surface-2 border border-border px-1 py-0.5 text-[0.85em] font-mono"
                 {...props}
               />
             ),
           pre: (props) => (
             <pre
-              className="my-2 overflow-x-auto rounded-lg bg-black/40 border border-border p-3 text-[0.85em] font-mono"
+              className="my-2 overflow-x-auto rounded-lg bg-surface-2 border border-border p-3 text-[0.85em] font-mono"
               {...props}
             />
           ),

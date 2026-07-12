@@ -110,7 +110,7 @@ export default function ReportView({ id }) {
         </div>
 
         {/* Verdict card */}
-        <section className="rounded-2xl border border-border bg-surface/70 p-6 sm:p-8 animate-rise">
+        <section className="card rounded-2xl p-6 sm:p-8 animate-rise">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-xs text-muted uppercase tracking-wide">Recommendation</div>
@@ -125,7 +125,7 @@ export default function ReportView({ id }) {
         </section>
 
         {/* Dimension scores */}
-        <section className="mt-6 rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
+        <section className="mt-6 card rounded-2xl p-6 sm:p-8">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-4">Rubric breakdown</h2>
           <div className="space-y-4">
             {DIMENSIONS.map(([key, label]) => (
@@ -143,7 +143,7 @@ export default function ReportView({ id }) {
 
         {/* Highlights */}
         {report.questionHighlights?.length > 0 && (
-          <section className="mt-6 rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
+          <section className="mt-6 card rounded-2xl p-6 sm:p-8">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-4">Notable moments</h2>
             <div className="space-y-4">
               {report.questionHighlights.map((h, i) => (
@@ -158,7 +158,7 @@ export default function ReportView({ id }) {
 
         {/* Follow-ups */}
         {report.followUpSuggestions?.length > 0 && (
-          <section className="mt-6 rounded-2xl border border-border bg-surface/70 p-6 sm:p-8">
+          <section className="mt-6 card rounded-2xl p-6 sm:p-8">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-4">For the next round</h2>
             <ul className="space-y-2">
               {report.followUpSuggestions.map((s, i) => (
@@ -180,7 +180,7 @@ export default function ReportView({ id }) {
             {showTranscript ? "▾ Hide" : "▸ Show"} full transcript ({history.length} messages)
           </button>
           {showTranscript && (
-            <div className="mt-3 rounded-2xl border border-border bg-surface/70 p-5 space-y-4">
+            <div className="mt-3 card rounded-2xl p-5 space-y-4">
               {history.map((t, i) => (
                 <div key={i}>
                   <div className="text-xs font-semibold text-muted mb-1">
@@ -209,7 +209,7 @@ export default function ReportView({ id }) {
           padding: 0.6rem 1.1rem;
           font-size: 0.9rem;
         }
-        .btn-accent:hover { background: color-mix(in srgb, var(--accent) 88%, #fff); }
+        .btn-accent:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
       `}</style>
     </main>
   );
@@ -249,7 +249,7 @@ function ScoreDial({ value }) {
 
 function ListCard({ title, color, items, empty }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface/70 p-6">
+    <section className="card rounded-2xl p-6">
       <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color }}>{title}</h2>
       {items?.length ? (
         <ul className="space-y-2.5">

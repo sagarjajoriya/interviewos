@@ -90,7 +90,7 @@ export default function SetupPage() {
 
         <form
           onSubmit={start}
-          className="rounded-2xl border border-border bg-surface/70 backdrop-blur p-6 sm:p-8 shadow-2xl shadow-black/30"
+          className="card rounded-2xl p-6 sm:p-8"
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Your name" hint="How the interviewer will address you">
@@ -237,18 +237,19 @@ export default function SetupPage() {
       <style jsx global>{`
         .input {
           width: 100%;
-          background: var(--surface-2);
+          background: var(--surface);
           border: 1px solid var(--border);
           border-radius: 0.6rem;
           padding: 0.65rem 0.8rem;
           color: var(--foreground);
           font-size: 0.95rem;
           outline: none;
+          box-shadow: 0 1px 2px rgba(28, 30, 43, 0.03);
           transition: border-color 0.15s, box-shadow 0.15s;
         }
         .input:focus {
           border-color: var(--accent);
-          box-shadow: 0 0 0 3px rgba(109, 107, 245, 0.25);
+          box-shadow: 0 0 0 3px rgba(90, 91, 216, 0.15);
         }
         .input::placeholder {
           color: var(--muted);
@@ -286,8 +287,8 @@ function Choice({ active, onClick, title, desc }) {
       onClick={onClick}
       className={`text-left rounded-xl border p-3.5 transition ${
         active
-          ? "border-accent bg-accent/10 ring-1 ring-accent"
-          : "border-border bg-surface-2 hover:border-accent/50"
+          ? "border-accent bg-accent/5 ring-1 ring-accent"
+          : "border-border bg-surface hover:border-accent/50 hover:shadow-sm"
       }`}
     >
       <div className="text-sm font-medium">{title}</div>

@@ -50,7 +50,7 @@ export default function HistoryList() {
         )}
 
         {interviews?.length === 0 && (
-          <div className="rounded-2xl border border-border bg-surface/70 p-10 text-center">
+          <div className="card rounded-2xl p-10 text-center">
             <p className="text-muted">No interviews yet.</p>
             <Link href="/" className="inline-block mt-4 rounded-lg bg-accent text-white text-sm font-medium px-4 py-2 hover:opacity-90">
               Start your first interview →
@@ -66,7 +66,7 @@ export default function HistoryList() {
               <Link
                 key={iv.id}
                 href={done ? `/report/${iv.id}` : `/interview/${iv.id}`}
-                className="block rounded-xl border border-border bg-surface/70 p-4 hover:border-accent/50 transition animate-rise"
+                className="card block rounded-xl p-4 hover:border-accent/50 transition animate-rise"
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
