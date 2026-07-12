@@ -5,6 +5,7 @@ import Link from "next/link";
 import { streamNDJSON } from "@/lib/client/ndjson";
 import { LEVELS, INTERVIEW_TYPES } from "@/lib/interview/personas";
 import Markdown from "@/app/components/Markdown";
+import { useVoice } from "./useVoice";
 
 export default function InterviewRoom({ id }) {
   const [config, setConfig] = useState(null);
@@ -15,6 +16,24 @@ export default function InterviewRoom({ id }) {
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(false);
+
+  const voice = useVoice();
+  const voiceOnRef = useRef(voiceOn);
+  voiceOnRef.current = voiceOn;
+
+  // Remember the user's voice preference across sessions.
+  useEffect(() => {
+    setVoiceOn(localStorage.getItem("interviewos.voice") === "1");
+  }, []);
+  function toggleVoice() {
+    setVoiceOn((v) => {
+      const next = !v;
+      localStorage.setItem("interviewos.voice", next ? "1" : "0");
+      if (!next) voice.stopSpeaking();
+      return next;
+    });
+  }
 
   const scrollRef = useRef(null);
   const openedRef = useRef(false); // guard against StrictMode double-open
@@ -36,6 +55,7 @@ export default function InterviewRoom({ id }) {
       try {
         await streamNDJSON(`/api/interviews/${id}/turn`, { message }, (ev) => {
           if (ev.type === "chunk") {
+            if (voiceOnRef.current) voice.speakChunk(ev.text);
             setMessages((m) => {
               const copy = [...m];
               const last = copy[copy.length - 1];
@@ -46,6 +66,7 @@ export default function InterviewRoom({ id }) {
             });
             scrollToBottom();
           } else if (ev.type === "done") {
+            if (voiceOnRef.current) voice.speakFlush();
             setMessages((m) => {
               const copy = [...m];
               const last = copy[copy.length - 1];
@@ -70,7 +91,9 @@ export default function InterviewRoom({ id }) {
         scrollToBottom();
       }
     },
-    [id, scrollToBottom]
+    // speakChunk/speakFlush are stable useCallbacks; listing them (not `voice`)
+    // keeps runTurn stable so the mount effect doesn't re-fire.
+    [id, scrollToBottom, voice.speakChunk, voice.speakFlush]
   );
 
   // Load session on mount; auto-start the opening turn if fresh.
@@ -153,6 +176,19 @@ export default function InterviewRoom({ id }) {
                 : "Loading…"}
             </div>
           </div>
+          {voice.supported && !ended && (
+            <button
+              onClick={toggleVoice}
+              title={voiceOn ? "Voice mode on — interviewer speaks aloud" : "Turn on voice mode"}
+              className={`text-sm rounded-lg border px-3 py-1.5 shrink-0 transition ${
+                voiceOn
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border text-muted hover:text-foreground hover:border-accent/50"
+              }`}
+            >
+              {voiceOn ? "🔊 Voice on" : "🔇 Voice off"}
+            </button>
+          )}
           {ended ? (
             <Link href={`/report/${id}`} className="btn-accent text-sm shrink-0">View report →</Link>
           ) : (
@@ -206,27 +242,64 @@ export default function InterviewRoom({ id }) {
       {!ended && (
         <div className="border-t border-border bg-surface/85 backdrop-blur">
           <div className="mx-auto max-w-3xl px-4 py-3">
-            <div className="flex items-end gap-2 rounded-xl border border-border bg-surface shadow-sm p-2 focus-within:border-accent/60 transition">
+            <div
+              className={`flex items-end gap-2 rounded-xl border bg-surface shadow-sm p-2 transition ${
+                voice.listening ? "border-danger/50 ring-2 ring-danger/15" : "border-border focus-within:border-accent/60"
+              }`}
+            >
               <textarea
-                value={input}
+                value={voice.listening ? voice.interim || "" : input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
                 rows={1}
                 disabled={streaming || loading}
-                placeholder={streaming ? "Interviewer is responding…" : "Type your answer… (Enter to send, Shift+Enter for newline)"}
+                readOnly={voice.listening}
+                placeholder={
+                  voice.listening
+                    ? "Listening… speak your answer"
+                    : streaming
+                      ? "Interviewer is responding…"
+                      : "Type your answer… (Enter to send, Shift+Enter for newline)"
+                }
                 className="flex-1 resize-none bg-transparent px-2 py-1.5 text-[0.95rem] outline-none max-h-40 disabled:opacity-60"
                 style={{ minHeight: "2.25rem" }}
               />
+              {voice.supported && (
+                <button
+                  onClick={() => {
+                    if (voice.listening) {
+                      voice.stopListening();
+                    } else if (!streaming && !loading) {
+                      voice.startListening((text) =>
+                        setInput((cur) => (cur ? `${cur} ${text}` : text))
+                      );
+                    }
+                  }}
+                  disabled={streaming || loading}
+                  title={voice.listening ? "Stop dictating" : "Dictate your answer"}
+                  className={`shrink-0 h-9 w-9 grid place-items-center rounded-lg border transition disabled:opacity-40 ${
+                    voice.listening
+                      ? "border-danger/50 bg-danger/10 text-danger animate-pulse"
+                      : "border-border text-muted hover:text-foreground hover:border-accent/50"
+                  }`}
+                >
+                  {voice.listening ? "■" : "🎙"}
+                </button>
+              )}
               <button
                 onClick={send}
-                disabled={!input.trim() || streaming || loading}
+                disabled={!input.trim() || streaming || loading || voice.listening}
                 className="btn-accent shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Send
               </button>
             </div>
             <p className="text-[11px] text-muted mt-1.5 px-1">
-              Answer naturally, as you would to a real interviewer.
+              {voice.listening
+                ? "Click ■ when you finish speaking — your words land in the box for review before sending."
+                : voice.speaking
+                  ? "Interviewer is speaking — start dictating to interrupt."
+                  : "Answer naturally, as you would to a real interviewer."}
             </p>
           </div>
         </div>
