@@ -18,7 +18,7 @@ Get a Gemini API key at https://aistudio.google.com/apikey and put it in
 
 ```
 LLM_PROVIDER=gemini
-LLM_MODEL=gemini-2.5-flash
+LLM_MODEL=gemini-3.5-flash
 GEMINI_API_KEY=xxxxxxxx
 ```
 
