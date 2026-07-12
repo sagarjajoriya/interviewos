@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LEVELS, INTERVIEW_TYPES } from "@/lib/interview/personas";
+import Markdown from "@/app/components/Markdown";
 
 const DIMENSIONS = [
   ["technical_competency", "Technical competency"],
@@ -185,7 +186,9 @@ export default function ReportView({ id }) {
                   <div className="text-xs font-semibold text-muted mb-1">
                     {t.role === "interviewer" ? "Interviewer" : config?.candidateName || "You"}
                   </div>
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{t.content}</p>
+                  <div className="text-sm">
+                    <Markdown>{t.content}</Markdown>
+                  </div>
                 </div>
               ))}
             </div>

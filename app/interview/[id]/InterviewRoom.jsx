@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { streamNDJSON } from "@/lib/client/ndjson";
 import { LEVELS, INTERVIEW_TYPES } from "@/lib/interview/personas";
+import Markdown from "@/app/components/Markdown";
 
 export default function InterviewRoom({ id }) {
   const [config, setConfig] = useState(null);
@@ -176,7 +177,7 @@ export default function InterviewRoom({ id }) {
           {messages.map((m, i) => (
             <Bubble key={i} role={m.role} name={config?.candidateName}>
               {m.content ? (
-                <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
+                <Markdown>{m.content}</Markdown>
               ) : m.streaming ? (
                 <span className="typing"><span /><span /><span /></span>
               ) : null}
