@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 /** GET /api/interviews — recent interviews (summaries, newest first). */
 export async function GET() {
-  const sessions = getRepo().list(50);
+  const sessions = await getRepo().list(50);
   return NextResponse.json({ interviews: sessions.map(toSessionSummary) });
 }
 
@@ -20,6 +20,6 @@ export async function POST(request) {
   }
 
   const config = normalizeConfig(body);
-  const session = getRepo().create(config);
+  const session = await getRepo().create(config);
   return NextResponse.json(toPublicSession(session), { status: 201 });
 }

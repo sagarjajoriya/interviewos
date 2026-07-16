@@ -12,7 +12,7 @@ export const maxDuration = 60;
 export async function POST(_request, { params }) {
   const { id } = await params;
   const repo = getRepo();
-  const session = repo.get(id);
+  const session = await repo.get(id);
 
   if (!session) {
     return NextResponse.json({ error: "Interview not found" }, { status: 404 });
@@ -31,7 +31,7 @@ export async function POST(_request, { params }) {
 
   try {
     const report = await generateReport(session.config, session.history);
-    repo.setReport(id, report);
+    await repo.setReport(id, report);
     return NextResponse.json({ report, cached: false });
   } catch (err) {
     console.error("[report] generation error:", err);

@@ -18,7 +18,7 @@ export const runtime = "nodejs";
 export async function POST(request, { params }) {
   const { id } = await params;
   const repo = getRepo();
-  const session = repo.get(id);
+  let session = await repo.get(id);
 
   if (!session) {
     return json({ error: "Interview not found" }, 404);
@@ -44,9 +44,11 @@ export async function POST(request, { params }) {
     return json({ error: "Message too long" }, 400);
   }
 
-  // Record the candidate's answer before generating the interviewer's reply.
+  // Record the candidate's answer before generating the interviewer's reply,
+  // and carry the returned snapshot forward — the interviewer must generate
+  // against a transcript that includes the answer it is replying to.
   if (message) {
-    repo.appendTurn(id, "candidate", message);
+    session = await repo.appendTurn(id, "candidate", message);
   }
 
   const encoder = new TextEncoder();
@@ -69,9 +71,9 @@ export async function POST(request, { params }) {
         }
 
         // Persist the interviewer's completed turn.
-        repo.appendTurn(id, "interviewer", result.text);
+        await repo.appendTurn(id, "interviewer", result.text);
         if (result.ended) {
-          repo.setStatus(id, "completed");
+          await repo.setStatus(id, "completed");
         }
         send({ type: "done", ended: result.ended, status: result.ended ? "completed" : "active" });
       } catch (err) {

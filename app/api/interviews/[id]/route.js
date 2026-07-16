@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 /** GET /api/interviews/:id — fetch a session (for restore / report view). */
 export async function GET(_request, { params }) {
   const { id } = await params;
-  const session = getRepo().get(id);
+  const session = await getRepo().get(id);
   if (!session) {
     return NextResponse.json({ error: "Interview not found" }, { status: 404 });
   }
